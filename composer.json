@@ -1,0 +1,20 @@
+{
+    "name": "lucas/php-tp2",
+    "authors": [
+        {
+            "name": "Lucas Encrenaz",
+            "email": "lucas@encrenaz.com"
+        }
+    ],
+    "require": {
+        "symfony/http-foundation": "^5.2"
+    },
+    "require-dev": {
+        "symfony/var-dumper": "^5.2"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "src/"
+        }
+    }
+}
