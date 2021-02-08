@@ -33,7 +33,7 @@
             <li class="my-2">
                 <a class="text-gray-400 hover:text-gray-100 dark:text-gray-300 dark:hover:text-white transition-colors duration-200"
                    href="#">
-                    &copy nathan CUVELLIER - 2021
+                    &copy Lucas ENCRENAZ - 2021
                 </a>
             </li>
         </ul>
