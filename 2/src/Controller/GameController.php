@@ -4,68 +4,79 @@ namespace App\Controller;
 
 
 use App\Entity\Game;
-use App\FakeData;
+use App\Entity\Player;
+use App\Repository\GameRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Annotation\Route;
 
+#[Route('/game', name:'game_')]
 class GameController extends AbstractController
 {
 
-    public function index(Request $request): Response
+    #[Route('', name:'index')]
+    public function index(GameRepository $game): Response
     {
-        /**
-         * @todo lister les jeux de la base
-         */
-        $games = FakeData::games(15);
-        return $this->render("game/index", ["games" => $games]);
+        return $this->render("game/index.html.twig", ["games" => $game->findAll()]);
 
     }
 
+    #[Route('/add', name:'add')]
     public function add(Request $request, EntityManagerInterface $entityManager): Response
     {
-        $em = $entityManager->getRepository(Game::class);
-        $game = FakeData::games(1)[0];
+        $game = (new Game())
+            ->setName('GAME 1')
+            ->setImage('https://fakeimg.pl/256x256/b0aae1/615b39/?text=GAME+1');
 
         if ($request->getMethod() == Request::METHOD_POST) {
-            $game = new Game();
+
             $game
                 ->setName($request->get('name'))
                 ->setImage($request->get('image'));
 
+            $entityManager->persist($game);
+            $entityManager->flush();
+
+
             return $this->redirectTo("/game");
         }
-        return $this->render("game/form", ["game" => $game]);
+        return $this->render("game/form.html.twig", ["game" => $game]);
     }
 
 
-    public function show(int $id): Response
+    #[Route('/show/{game}', name:'show')]
+    public function show(Game $game, Request $test): Response
     {
-        $game = FakeData::games(1)[0];
-        return $this->render("game/show", ["game" => $game]);
+        return $this->render("game/show.html.twig", ["game" => $game]);
     }
 
 
-    public function edit(int $id, Request $request): Response
+    #[Route('/edit/{game}', name:'edit')]
+    public function edit(Game $game, Request $request, EntityManagerInterface $entityManager): Response
     {
-        $game = FakeData::games(1)[0];
+        $owner = $entityManager->getRepository(Player::class)->findAll()[0];
 
         if ($request->getMethod() == Request::METHOD_POST) {
-            /**
-             * @todo enregistrer l'objet
-             */
+            $game
+                ->setName($request->get('name'))
+                ->setImage($request->get('image'))
+                ->setOwned($owner);
+
+            $entityManager->persist($game);
+            $entityManager->flush();
             return $this->redirectTo("/game");
         }
-        return $this->render("game/form", ["game" => $game]);
+        return $this->render("game/form.html.twig", ["game" => $game]);
 
 
     }
 
-    public function delete(int $id, EntityManagerInterface $entityManager): Response
+    #[Route('/delete/{game}', name:'delete')]
+    public function delete(Game $game, EntityManagerInterface $entityManager): Response
     {
-        $em = $entityManager->getRepository(Game::class);
-        $game = $em->find($id);
         $entityManager->remove($game);
+        $entityManager->flush();
         return $this->redirectTo("/game");
 
     }

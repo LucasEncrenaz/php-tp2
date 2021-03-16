@@ -3,34 +3,64 @@
 namespace App\Controller;
 
 
+use App\Entity\Game;
+use App\Entity\Player;
+use App\Entity\Score;
 use App\FakeData;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Annotation\Route;
 
-
+#[Route('/score', name:'score_')]
 class ScoreController extends AbstractController
 {
 
-
-    public function index(Request $request): Response
+    #[Route('', name:'index')]
+    public function index(EntityManagerInterface $entityManager): Response
     {
-        $scores = FakeData::scores();
+        $scores = $entityManager
+            ->getRepository(Score::class)
+            ->findAll();
 
-        $games = FakeData::games();
-        $players = FakeData::players();
+        $games = $entityManager
+            ->getRepository(Game::class)
+            ->findAll();
 
-        return $this->render("score/index", ["scores" => $scores,
+        $players = $entityManager
+            ->getRepository(Player::class)
+            ->findAll();
+
+        return $this->render("score/index.html.twig", ["scores" => $scores,
             "games" => $games, "players" => $players]);
     }
 
-    public function add(Request $request): Response
+    #[Route('/add', name:'add')]
+    public function add(Request $request, EntityManagerInterface $entityManager): Response
     {
         if ($request->getMethod() == Request::METHOD_POST) {
-            /**
-             * @todo enregistrer l'objet
-             */
+            $game = $entityManager->getRepository(Game::class)->find($request->get('game'));
+            $player = $entityManager->getRepository(Player::class)->find($request->get('player'));
+
+            $score = (new Score())
+                ->setCreatedAt(new \DateTime())
+                ->setGame($game)
+                ->setPlayer($player)
+                ->setScore(10);
+
+            $entityManager->persist($score);
+            $entityManager->flush();
+
             return $this->redirectTo("/score");
         }
+    }
+
+    #[Route('/delete/{score}', name:'delete')]
+    public function delete(Score $score, EntityManagerInterface $entityManager) : Response
+    {
+        $entityManager->remove($score);
+        $entityManager->flush();
+        return $this->redirectTo("/score");
     }
 
 }

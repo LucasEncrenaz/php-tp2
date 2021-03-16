@@ -1,17 +1,24 @@
 <?php
 
-
 namespace App\Controller;
 
-
-use Symfony\Component\HttpFoundation\Request;
+use App\Repository\ScoreRepository;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Annotation\Route;
 
 class HomeController extends AbstractController
 {
 
-    public function index(Request $request): Response
+    #[Route('/', name:'home')]
+    public function index(ScoreRepository $scoreRepository): Response
     {
-        return $this->render("home/index", ["name" => $request->query->get('name')]);
+        $startDate = date("d/m", strtotime("-6 days", time()));
+        $now = date('d/m');
+
+        return $this->render("home/index.html.twig", [
+            "popularGamesOfWeek" => $scoreRepository->getPopularGamesOfWeek(),
+            "startDate" => $startDate,
+            "now" => $now,
+        ]);
     }
 }
